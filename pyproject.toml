@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zcf24"
+version = "0.1.2"
+description = "Models emission changing-look inspiral events."
+readme = { file = "README.md", content-type = "text/markdown" }
+authors = [
+    { name = "Jonathan Zrake", email = "jzrake@clemson.edu" },
+]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy>=1.21.0",
+    "scipy>=1.7.0",
+]
+requires-python = ">=3.6"
+
+[project.urls]
+Homepage = "https://github.com/clemson-cal/zcf24"
+"Bug Tracker" = "https://github.com/clemson-cal/zcf24/issues"
+
+[tool.black]
+line-length = 88
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+
+[tool.mypy]
+files = ["zcf24"]

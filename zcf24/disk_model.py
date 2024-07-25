@@ -1,6 +1,10 @@
 from dataclasses import dataclass, field
 from numpy import *
 
+__all__ = ["DiskModel", "planck_spectrum", "eddington_accretion_rate"]
+
+
+# Relevant physical constants in CGS units
 M_sun = 1.9884e33
 sigma_t = 5.670374419e-5
 G = 6.6743e-8
@@ -15,32 +19,23 @@ AU = 1.496e13
 eV = 1.60218e-12
 
 
-def planck_spectrum(nu: float, T: float):
-    """
-    Return the spectral radiance at frequency nu, integrated over solid angle
-    """
-    x = clip(h * nu / k / T, None, 709)
-    return 2 * pi * h * nu**3 / c**2 / (exp(x) - 1)
-
-
-def eddington_accretion_rate(mass: float, eta: float = 0.1) -> float:
-    L = 1.26e38 * mass / M_sun
-    return L / (eta * c**2)
-
-
 @dataclass
 class DiskModel:
     """
-    A model for the normalized surface density and mass accretion rate
+    Generates variable disk structure using a two-zone disk approximation
+
+    This class can generate surface density profiles, accretion rates, and
+    emission spectra based on self-similar solutions of a disk surrounding
+    a binary undergoing gravitational wave driven orbital decay.
     """
 
-    n: float = 0.0
-    mdot: float = 1.0
-    tdec: float = 1.0
-    rdec: float = 1.0
-    ell: float = 1.0
-    kappa: float = 5 / 3
-    binary_mass: float = 1.0
+    n: float = 0.0  # power-law index defining the viscosity law
+    mdot: float = 1.0  # mass accretion rate
+    tdec: float = 1.0  # viscous decoupling time
+    rdec: float = 1.0  # viscous decoupling radius
+    ell: float = 1.0  # dimensionless torque parameter
+    kappa: float = 5 / 3  # fudge factor, fixed empirically
+    binary_mass: float = 1.0  # mass of the binary, and of the merger remnant
 
     @property
     def isco_radius(self):
@@ -65,14 +60,11 @@ class DiskModel:
         density would go through zero; the disk inner edge can be formally
         either larger or smaller than a. For a negatively torqued binary the
         surface density diverges at r=0, so we define the inner edge to be at
-        r=a. If t > 0 r_star the disk inner edge is set to the ISCO for a
+        r=a. If t > 0, the disk inner edge is set to the ISCO for a
         non-rotating BH.
         """
         if t >= 0.0:
             return self.isco_radius
-        # elif t <= 0.0 and self.ell >= 0.0:
-        #     q = (2 + self.n) / 4
-        #     return self.rdec * self.ell ** (2 / q)
         elif self.ell >= 0.0:
             return self.binary_separation(t) * self.ell**2
         else:
@@ -373,3 +365,19 @@ class DiskModel:
         logr0 = log(self.r_star(t))
         logr1 = log(self.r_star(t) * disk_extent)
         return quad(dL_dlogr, logr0, logr1, epsrel=epsrel)[0]
+
+
+def planck_spectrum(nu: float, T: float):
+    """
+    Return the spectral radiance at frequency nu, integrated over solid angle
+    """
+    x = clip(h * nu / k / T, None, 709)
+    return 2 * pi * h * nu**3 / c**2 / (exp(x) - 1)
+
+
+def eddington_accretion_rate(mass: float, eta: float = 0.1) -> float:
+    """
+    Return the Eddington mass accretion rate, for radiative efficiency eta
+    """
+    L = 1.26e38 * mass / M_sun
+    return L / (eta * c**2)
