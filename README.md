@@ -14,13 +14,12 @@ pip install zcf24
 ```
 
 ## Example Usage
-This code generates Fig. 1 from the paper.
+This code below generates Fig. 1 from the paper:
 
 ```python
 from matplotlib.pyplot import figure, show
 from numpy import linspace
 from zcf24 import DiskModel
-
 
 fig = figure()
 ax1 = fig.add_subplot()
